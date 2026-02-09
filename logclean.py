@@ -42,7 +42,6 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
                 continue
             outfile.write(line)
     print(f"{logfile} cleaned.")
-    print(replace_logs)
     if replace_logs:
         os.replace(tmpfile, logfile)
 
