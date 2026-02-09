@@ -11,44 +11,78 @@
 import sys
 import getopt
 
-argc = len(sys.argv)
-argv = sys.argv[1:]
-join_part = True
-purge_bots = False
-bots = []
-botfile = "botfile.txt"
-
 def load_botfile(bfile):
     botfile_bots = []
-    with open(bfile, "r") as bot_file:
+    with open(bfile, "r", encoding='utf-8', errors='replace') as bot_file:
         for nick in bot_file:
             botfile_bots.append(nick.strip("\n"))
     return botfile_bots
 
-def clean_logs(logfile):
+def clean_logs(logfile, join_part, purge_bots, bots):
     filename = logfile.split(".")[0]
     tmpfile = f"{filename}.tmp"
-    with open(logfile, 'r') as infile, \
-        open(tmpfile, 'w') as outfile:
+    with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
+        open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
 
         for line in infile:
-            stripped = line.strip("\n")
+            stripped = line.rstrip("\n")
             split = stripped.split()
-            if join_part == True and split[1] == "***":
-                pass
-            elif purge_bots == True and split[1].strip("<>") in bots:
-                pass
-            else:
-                outfile.write(line)
+            if not split:
+                continue
+            if join_part and len(split) > 1 and split[1] == "***":
+                continue
+            if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
+                continue
+            outfile.write(line)
+    print(f"Finished cleaning {logfile}")
 
-if __name__ == "__main__":
+def main():
+    argc = len(sys.argv)
+    argv = sys.argv[1:]
+    join_part = False
+    purge_bots = False
+    bots = []
+    botfile = "botfile.txt"
+    logfiles = []
+
+# Replace the block below with getopt.
+"""
     if argc <= 1:
         print("Usage: logclean <filename>.log")
         sys.exit(1)
-    '''
-    if '-b' in argv:
-        purge_bots = True
-        bots = load_botfile(botfile)
-    '''
-    clean_logs("2026-01-01.log") # <--- FIX THIS
+    for arg in argv:
+        if '-c' not in argv:
+            if arg.endswith(".log"):
+                logfiles.append(arg)
+        elif '-c' in argv:
+            pass
+            #load files from directory
+        elif '-b' in argv:
+            purge_bots = True
+            try:
+                if arg.endswith(".txt"):
+                    bots = load_botfile(arg)
+                else:
+                    bots = load_botfile(botfile)
+            except FileNotFoundError:
+                print(f"Botfile {botfile} not found. Please provide a valid botfile or ensure {botfile} exists.")
+                sys.exit(1)
+        elif '-j' in argv:
+            join_part = True
+        elif '-h' in argv:
+            print("Usage: logclean <filename>.log")
+            print("Flags:")
+            print("-c : Clean all logs in the provided directory")
+            print("-b : Purge lines from bots listed in botfile.txt")
+            print("-j: Purge join/part messages")
+            print("-h : Display this help message")
+            sys.exit(0)
+"""
+
+    for logfile in logfiles:
+        print(f"Cleaning {logfile}...")
+        clean_logs(logfile, join_part, purge_bots, bots)
     sys.exit(0)
+
+if __name__ == "__main__":
+    main()
