@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 
 # TODO
-# Allow user to provide .log from the terminal
-# Allow user to provide flag to clean all logs in provided directory
-# Fix case matching for flags
-# Add removal of original and renaming of tmp file after cleaning.
+# !!! Directory search is broken-ish, it only looks for .log files in the provided directory, not subdirectories.
+# !!! Among other issues.
+# !!! Botfile will only load if it's in the same directory as the script.
 # Add computation time display (how long did this take to clean?)
 # Add disk savings display (how much disk space have I saved?)
 
