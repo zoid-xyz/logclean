@@ -8,6 +8,7 @@
 # Add computation time display (how long did this take to clean?)
 # Add disk savings display (how much disk space have I saved?)
 
+import os
 import sys
 import getopt
 
@@ -17,6 +18,13 @@ def load_botfile(bfile):
         for nick in bot_file:
             botfile_bots.append(nick.strip("\n"))
     return botfile_bots
+
+def load_logfiles(logpath):
+    logfiles = []
+    for file in os.listdir(logpath):
+        if file.endswith(".log"):
+            logfiles.append(file)
+    return logfiles
 
 def clean_logs(logfile, join_part, purge_bots, bots):
     filename = logfile.split(".")[0]
@@ -44,18 +52,17 @@ def main():
     noauth_clean = None
     bots = []
     botfile = "botfile.txt"
-    logfiles = ['2026-01-01.log']
+    logfiles = []
 
     if argc <= 1:
         print("Usage: logclean <filename>.log [options -c -b -j -h]")
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(argv, "cbjhy")
+        opts, args = getopt.getopt(argv, "c:bjhyl:")
 
         for opt, val in opts:
             if opt == "-c":
-                print("Clean all logs in the provided directory flag set.")
-                # TODO: load files from directory instead of args
+                logfiles = load_logfiles(val)
             elif opt == "-b":
                 purge_bots = True
                 if val:
@@ -67,6 +74,8 @@ def main():
                     sys.exit(65)
             elif opt == "-j":
                 join_part = True
+            elif opt == "-l":
+                logfiles.append(val)
             elif opt == "-y":
                 noauth_clean = True
             elif opt == "-h":
@@ -75,6 +84,7 @@ def main():
                 print("-c           : Clean all logs in the provided directory")
                 print("-b <botfile> : Purge bot messages based on botfile")
                 print("-j           : Remove JOIN/PART messages")
+                print("-l <logfile> : Specify a single log file to clean")
                 print("-y           : Proceed without confirmation (use with caution)")
                 print("-h           : Display this help message")
                 sys.exit(0)
@@ -82,26 +92,30 @@ def main():
     except getopt.GetoptError as err:
         print(err)
         print("Usage: logclean <filename>.log [options -c -b -j -h]")
-        sys.exit(2)     
-    for logfile in logfiles:
-        if not purge_bots and not join_part:
-            print("No flags provided, nothing to clean.")
-            sys.exit(0)
-        elif purge_bots and not join_part:
-            print("Purging bots.")
-        elif join_part and not purge_bots:
-            print("Purging JOIN/PART messages.")
-        elif purge_bots and join_part:
-            print("Purging bots and JOIN/PART messages.")
-        if not noauth_clean:
-            confirm = input(f"Are you sure you want to clean {logfile}? (y/n): ")
-            if confirm.lower() != 'y':
-                print("Aborting.")
+        sys.exit(2)
+    if not logfiles:
+        print("No log files found to clean. Exiting.")
+        sys.exit(1)
+    else:
+        for logfile in logfiles:
+            if not purge_bots and not join_part:
+                print("No flags provided, nothing to clean.")
                 sys.exit(0)
-        else:
-            print("Proceeding without confirmation.")
-        print("Cleaning...")
-        clean_logs(logfile, join_part, purge_bots, bots)
+            elif purge_bots and not join_part:
+                print("Purging bots.")
+            elif join_part and not purge_bots:
+                print("Purging JOIN/PART messages.")
+            elif purge_bots and join_part:
+                print("Purging bots and JOIN/PART messages.")
+            if not noauth_clean:
+                confirm = input(f"Are you sure you want to clean {logfile}? (y/n): ")
+                if confirm.lower() != 'y':
+                    print("Aborting.")
+                    sys.exit(0)
+            else:
+                print("Proceeding without confirmation.")
+            print("Cleaning...")
+            clean_logs(logfile, join_part, purge_bots, bots)
     sys.exit(0)
 
 if __name__ == "__main__":
