@@ -39,11 +39,17 @@ def clean_logs(logfile, join_part, purge_bots, bots):
 def main():
     argc = len(sys.argv)
     argv = sys.argv[1:]
-    join_part = False
-    purge_bots = False
+    join_part = True
+    purge_bots = True
     bots = []
     botfile = "botfile.txt"
-    logfiles = []
+    logfiles = ['2026-01-01.log']
+
+    for logfile in logfiles:
+        print(f"Cleaning {logfile}...")
+        bots = load_botfile(botfile)
+        clean_logs(logfile, join_part, purge_bots, bots)
+    sys.exit(0)
 
 # Replace the block below with getopt.
 """
@@ -78,11 +84,6 @@ def main():
             print("-h : Display this help message")
             sys.exit(0)
 """
-
-    for logfile in logfiles:
-        print(f"Cleaning {logfile}...")
-        clean_logs(logfile, join_part, purge_bots, bots)
-    sys.exit(0)
 
 if __name__ == "__main__":
     main()
