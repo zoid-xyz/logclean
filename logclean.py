@@ -25,7 +25,7 @@ def load_logfiles(logpath):
             logfiles.append(f"{logpath}/{file}")
     return logfiles
 
-def clean_logs(logfile, join_part, purge_bots, bots):
+def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
     filename = logfile.split(".")[0]
     tmpfile = f"{filename}.tmp"
     with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
@@ -42,7 +42,9 @@ def clean_logs(logfile, join_part, purge_bots, bots):
                 continue
             outfile.write(line)
     print(f"{logfile} cleaned.")
-    os.replace(tmpfile, logfile)
+    print(replace_logs)
+    if replace_logs:
+        os.replace(tmpfile, logfile)
 
 def main():
     argc = len(sys.argv)
@@ -50,15 +52,16 @@ def main():
     join_part = None
     purge_bots = None
     noauth_clean = None
+    replace_logs = None
     bots = []
     botfile = "botfile.txt"
     logfiles = []
 
     if argc <= 1:
-        print("Usage: logclean <filename>.log [options -c -b -j -h]")
+        print("Usage: logclean <filename>.log [options -c -b -j -h -y -l -r]")
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(argv, "c:bjhyl:")
+        opts, args = getopt.getopt(argv, "c:brjhyl:")
 
         for opt, val in opts:
             match opt:
@@ -81,6 +84,9 @@ def main():
                 case "-l":
                     logfiles.append(val)
                 
+                case "-r":
+                    replace_logs = True
+                
                 case "-y":
                     noauth_clean = True
                 
@@ -91,6 +97,7 @@ def main():
                     print("-b <botfile> : Purge bot messages based on botfile")
                     print("-j           : Remove JOIN/PART messages")
                     print("-l <logfile> : Specify a single log file to clean")
+                    print("-r           : Removes original logs, replaces with cleaned logs.")
                     print("-y           : Proceed without confirmation (use with caution)")
                     print("-h           : Display this help message")
                     sys.exit(0)
@@ -106,7 +113,7 @@ def main():
     else:
         if not purge_bots and not join_part:
             print("No flags provided, nothing to clean.")
-            sys.exit(0)
+            sys.exit(1)
         elif purge_bots and not join_part:
             print("Purging bots.")
         elif join_part and not purge_bots:
@@ -114,15 +121,15 @@ def main():
         elif purge_bots and join_part:
             print("Purging bots and JOIN/PART messages.")
         if not noauth_clean:
-            confirm = input(f"Are you sure you want to clean {logfile}? (y/n): ")
+            confirm = input(f"Are you sure you want to clean logs? (y/n): ")
             if confirm.lower() != 'y':
                 print("Aborting.")
-                sys.exit(0)
+                sys.exit(1)
         else:
             print("Proceeding without confirmation.")
         print("Cleaning...")
         for logfile in logfiles:
-            clean_logs(logfile, join_part, purge_bots, bots)
+            clean_logs(logfile, join_part, purge_bots, bots, replace_logs)
     sys.exit(0)
 
 if __name__ == "__main__":
