@@ -34,56 +34,75 @@ def clean_logs(logfile, join_part, purge_bots, bots):
             if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
                 continue
             outfile.write(line)
-    print(f"Finished cleaning {logfile}")
+    print(f"{logfile} cleaned.")
 
 def main():
     argc = len(sys.argv)
     argv = sys.argv[1:]
-    join_part = True
-    purge_bots = True
+    join_part = None
+    purge_bots = None
+    noauth_clean = None
     bots = []
     botfile = "botfile.txt"
     logfiles = ['2026-01-01.log']
 
+    if argc <= 1:
+        print("Usage: logclean <filename>.log [options -c -b -j -h]")
+        sys.exit(1)
+    try:
+        opts, args = getopt.getopt(argv, "cbjhy")
+
+        for opt, val in opts:
+            if opt == "-c":
+                print("Clean all logs in the provided directory flag set.")
+                # TODO: load files from directory instead of args
+            elif opt == "-b":
+                purge_bots = True
+                if val:
+                    botfile = val
+                try:
+                    bots = load_botfile(botfile)
+                except FileNotFoundError:
+                    print(f"Botfile {botfile} not found. Exiting.")
+                    sys.exit(65)
+            elif opt == "-j":
+                join_part = True
+            elif opt == "-y":
+                noauth_clean = True
+            elif opt == "-h":
+                print("Usage: logclean <filename>.log [options -c -b -j -h]")
+                print("Flags:")
+                print("-c           : Clean all logs in the provided directory")
+                print("-b <botfile> : Purge bot messages based on botfile")
+                print("-j           : Remove JOIN/PART messages")
+                print("-y           : Proceed without confirmation (use with caution)")
+                print("-h           : Display this help message")
+                sys.exit(0)
+
+    except getopt.GetoptError as err:
+        print(err)
+        print("Usage: logclean <filename>.log [options -c -b -j -h]")
+        sys.exit(2)     
     for logfile in logfiles:
-        print(f"Cleaning {logfile}...")
-        bots = load_botfile(botfile)
+        if not purge_bots and not join_part:
+            print("No flags provided, nothing to clean.")
+            sys.exit(0)
+        elif purge_bots and not join_part:
+            print("Purging bots.")
+        elif join_part and not purge_bots:
+            print("Purging JOIN/PART messages.")
+        elif purge_bots and join_part:
+            print("Purging bots and JOIN/PART messages.")
+        if not noauth_clean:
+            confirm = input(f"Are you sure you want to clean {logfile}? (y/n): ")
+            if confirm.lower() != 'y':
+                print("Aborting.")
+                sys.exit(0)
+        else:
+            print("Proceeding without confirmation.")
+        print("Cleaning...")
         clean_logs(logfile, join_part, purge_bots, bots)
     sys.exit(0)
-
-# Replace the block below with getopt.
-"""
-    if argc <= 1:
-        print("Usage: logclean <filename>.log")
-        sys.exit(1)
-    for arg in argv:
-        if '-c' not in argv:
-            if arg.endswith(".log"):
-                logfiles.append(arg)
-        elif '-c' in argv:
-            pass
-            #load files from directory
-        elif '-b' in argv:
-            purge_bots = True
-            try:
-                if arg.endswith(".txt"):
-                    bots = load_botfile(arg)
-                else:
-                    bots = load_botfile(botfile)
-            except FileNotFoundError:
-                print(f"Botfile {botfile} not found. Please provide a valid botfile or ensure {botfile} exists.")
-                sys.exit(1)
-        elif '-j' in argv:
-            join_part = True
-        elif '-h' in argv:
-            print("Usage: logclean <filename>.log")
-            print("Flags:")
-            print("-c : Clean all logs in the provided directory")
-            print("-b : Purge lines from bots listed in botfile.txt")
-            print("-j: Purge join/part messages")
-            print("-h : Display this help message")
-            sys.exit(0)
-"""
 
 if __name__ == "__main__":
     main()
