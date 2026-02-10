@@ -12,6 +12,7 @@ import sys
 import getopt
 
 def load_botfile(bfile):
+    # this only works if the botfile is in the same directory as the script.
     botfile_bots = []
     with open(bfile, "r", encoding='utf-8', errors='replace') as bot_file:
         for nick in bot_file:
@@ -19,6 +20,7 @@ def load_botfile(bfile):
     return botfile_bots
 
 def load_logfiles(logpath):
+    # this does not work if the file is provided with -l 
     logfiles = []
     for file in os.listdir(logpath):
         if file.endswith(".log"):
@@ -26,7 +28,8 @@ def load_logfiles(logpath):
     return logfiles
 
 def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
-    filename = logfile.split(".")[0]
+    # THIS WORKS
+    filename = logfile.split(".")[0] # <-- need to fix this though.
     tmpfile = f"{filename}.tmp"
     with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
@@ -90,6 +93,8 @@ def main():
                     noauth_clean = True
                 
                 case "-h":
+                    # for some presently unknown reasons these only work in a specific order.
+                    # -r won't work if it's the last option?
                     print("Usage: logclean <filename>.log [options -c -b -j -h]")
                     print("Flags:")
                     print("-c           : Clean all logs in the provided directory")
