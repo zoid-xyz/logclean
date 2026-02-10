@@ -80,7 +80,7 @@ def main():
         print("Usage: logclean <filename>.log [options -c -b -j -h -y -l -r]")
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(argv, "c:brjhyl:")
+        opts, args = getopt.getopt(argv, "c:b:l:rjhy")
 
         for opt, val in opts:
             match opt:
@@ -110,8 +110,6 @@ def main():
                     noauth_clean = True
                 
                 case "-h":
-                    # for some presently unknown reasons these only work in a specific order.
-                    # -r won't work if it's the last option?
                     print("Usage: logclean <filename>.log [options -c -b -j -h]")
                     print("Flags:")
                     print("-c           : Clean all logs in the provided directory")
