@@ -6,6 +6,7 @@
 # !!! Botfile will only load if it's in the same directory as the script.
 # Add computation time display (how long did this take to clean?)
 # Add disk savings display (how much disk space have I saved?)
+# Add a license
 
 import os
 import sys
