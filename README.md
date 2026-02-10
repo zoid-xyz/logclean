@@ -20,4 +20,4 @@ logclean [options]
 ```
 
 ## License
-This project is licensed under the [2-Clause BSD](LICENSE).
+This project is licensed under the [2-Clause BSD license](LICENSE).
