@@ -91,12 +91,15 @@ WeatherScript
 Without -r, cleaned logs are written to .tmp files.
   
 The script is designed for ZNC logs but works with any compatible format.
-
-The script was written with speed and memory in mind, no regex, 
-only strip() and simple comparisons.
   
 This script removes only join/part/quit messages with the -j flag. Other
-channel events are preserved.  
+channel events are preserved.
+  
+Default behavior when -q is provided will be to log output to ~/.logclean/logclean.log
+This behavior can be prevented by editing the LOGGING boolean at the top of the script.
+  
+The script was written with speed and memory in mind, no regex, 
+only strip() and simple comparisons.
 
 ## Todo
   
