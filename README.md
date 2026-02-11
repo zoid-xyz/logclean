@@ -15,7 +15,7 @@ all join/part messages as those are also unnecessary for my uses.
 This script assumes your logs are saved in the traditional ZNC log
 format.
 
-ie: 
+ie:   
 [HH:MM:SS] <usernick> message  
 [00:01:41] *** Joins: usernick (~usernick@user/usernick) usernick
 
