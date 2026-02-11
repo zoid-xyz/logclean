@@ -16,7 +16,7 @@ This script assumes your logs are saved in the traditional ZNC log
 format.
 
 ie: 
-[HH:MM:SS] <usernick> message
+[HH:MM:SS] <usernick> message  
 [00:01:41] *** Joins: usernick (~usernick@user/usernick) usernick
 
 ## Installation
