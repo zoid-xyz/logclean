@@ -1,7 +1,4 @@
-## License
-This project is licensed under the [2-Clause BSD license](LICENSE).
-
-# logclean - an IRC/ZNC Log Cleaning Utility
+# logclean -- an IRC/ZNC Log Cleaning Utility
 
 ## Table of Contents
 - [About](#about)
@@ -96,6 +93,9 @@ The script is designed for ZNC logs but works with any compatible format.
 
 The script was written with speed and memory in mind, no regex, 
 only strip() and simple comparisons.
+  
+This script removes only join/part/quit messages with the -j flag. Other
+channel events are preserved.  
 
 ## Todo
 Add computation time display (how long did this take to clean?)
