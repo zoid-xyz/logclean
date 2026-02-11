@@ -17,19 +17,23 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # TODO
-# Finish implementing logging to file when -q is provided.
-# Create .logclean/ in homedir to store logclean.conf/log
 
 import os
 import sys
 import getopt
 from time import monotonic
 from datetime import datetime
+from pathlib import Path
+
+LOGGING = True
+LOGCLEAN_DIR = Path.home() / ".logclean"
+LOGCLEAN_FILE = LOGCLEAN_DIR / "logclean.log"
+LOGCLEAN_DIR.mkdir(exist_ok=True)
 
 def load_botfile(bfile):
     botfile = os.path.abspath(bfile)
     botfile_bots = []
-    with open(botfile, "r", encoding='utf-8', errors='replace') as bot_file:
+    with open(botfile, 'r', encoding='utf-8', errors='replace') as bot_file:
         for nick in bot_file:
             botfile_bots.append(nick.rstrip("\n"))
     return botfile_bots
@@ -37,7 +41,7 @@ def load_botfile(bfile):
 def load_logfiles(logpath):
     logfiles = []
     for file in os.listdir(logpath):
-        if file.endswith(".log"):
+        if file.endswith('.log'):
             logfiles.append(os.path.join(logpath, file))
     return logfiles
 
@@ -67,23 +71,18 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
         os.replace(tmpfile, logfile)
     return space_savings
 
-def print_out(data, quiet):
-    if not quiet:
-        print(data)
-'''
-    # I need to store this logfile in the users homedir. .logclean.log ?
-    Perhaps a .logclean directory to store logclean.log and logclean.conf
+def logclean_log(data):
+    try:
+        with open(LOGCLEAN_FILE, 'a', encoding='utf-8', errors='replace') as logging:
+            logging.write(f"{data}\n")
+    except Exception:
+        print("Couldn't open logclean log file.")
 
-    elif quiet:
-        timestamp = datetime.now().strftime('%Y-%m-%d [%H:%M:%S]')
-        try:
-            with open("logclean.log", "a") as logging:
-                logging.write(f"{timestamp} {data}\n")
-        except Exception:
-            pass
-    else:
-        pass
-'''
+def print_out(data, quiet):
+    if quiet and LOGGING:
+        logclean_log(data)
+    elif not quiet:
+        print(data)
 
 def main():
     argc = len(sys.argv)
@@ -185,13 +184,14 @@ def main():
         else:
             print_out("Proceeding without confirmation.", quiet)
 
-        print_out("Cleaning...", quiet)
+        timestamp = datetime.now().strftime('%Y-%m-%d [%H:%M:%S]')
+        print_out(f"{timestamp} Cleaning...", quiet)
         start_time = monotonic()
         sorted_logfiles = sorted(logfiles)
         for logfile in sorted_logfiles:
             try:
                 savings = clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet)
-                space_saved = space_saved + savings
+                space_saved += savings
             except FileNotFoundError:
                 print_out(f"{logfile}: file not found, skipping.", quiet)
         end_time = monotonic()
