@@ -1,7 +1,7 @@
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
 
-# logclean — an IRC/ZNC Log Cleaning Utility
+# logclean - an IRC/ZNC Log Cleaning Utility
 
 ## Table of Contents
 - [About](#about)
@@ -10,6 +10,7 @@ This project is licensed under the [2-Clause BSD license](LICENSE).
 - [Examples](#examples)
 - [Botfile Format](#botfile-format)
 - [Notes](#notes)
+- [Todo](#notes)
 - [License](#license)
 
 ## About
@@ -92,6 +93,16 @@ WeatherScript
 Without -r, cleaned logs are written to .tmp files.
   
 The script is designed for ZNC logs but works with any compatible format.
+
+The script was written with speed and memory in mind, no regex, 
+only strip() and simple comparisons.
+
+## Todo
+Add computation time display (how long did this take to clean?)
+  
+Add disk savings display (how much disk space have I saved?)
+  
+Add -o &lt;output_dir&gt; option.
 
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
