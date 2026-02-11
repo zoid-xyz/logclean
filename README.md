@@ -17,7 +17,7 @@ format.
 
   
 [HH:MM:SS] &lt;usernick&gt; message  
-[00:01:41] *** Joins: usernick (~usernick@user/usernick) usernick
+[HH:MM:SS] *** Joins: usernick (~usernick@user/usernick) usernick
 
 ## Installation
 1. Clone the repository:
