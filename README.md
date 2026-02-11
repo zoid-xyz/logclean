@@ -25,14 +25,14 @@ I like keeping long-term logs, but the clutter makes them huge fast.
 `logclean` solves that by allowing you to:
 
 - Purge any nick listed in a botfile (e.g., bots, script users, spam)
-- Remove JOIN/PART and other ZNC event lines (`***`)
+- Remove JOIN/PART lines
 - Clean individual logs or entire directories
 - Optionally replace the originals with cleaned versions
 
 It assumes traditional ZNC log formatting such as:
   
-[HH:MM:SS] &lt;usernick&gt; message  
-[HH:MM:SS] *** Joins: usernick (~usernick@user/usernick) usernick
+[HH:MM:SS] &lt;alcamus&gt; message  
+[HH:MM:SS] *** Joins: alcamus (~alcamus@user/alcamus) alcamus
 
 ## Installation
 
@@ -50,12 +50,13 @@ To run the project, use the following command:
 logclean [options]
 
 Flags:
--c <dir>     : Clean all logs in the provided directory
+-d <dir>     : Clean all logs in the provided directory
 -b <botfile> : Purge bot messages based on botfile
 -j           : Remove join/part messages
 -l <logfile> : Specify a single log file to clean
 -r           : Removes original logs, replaces with cleaned logs
 -y           : Proceed without confirmation (use with caution)
+-q           : Quiet; does not print output to terminal
 -h           : Display this help message
 ```
 
@@ -70,7 +71,7 @@ logclean -l #channel.log -b botfile.txt
 ```
 Clean an entire directory, purge bots, remove events, and overwrite originals:
 ```bash
-logclean -c /var/znc/users/myuser/moddata/log/ -b botfile.txt -j -r
+logclean -d /var/znc/users/myuser/moddata/log/ -b botfile.txt -j -r
 ```
 
 ## Botfile Format
@@ -83,7 +84,7 @@ WeatherScript
 ```
 
 ## Notes
--c and -l cannot be used together.
+-d and -l cannot be used together.
   
 -j and/or -b must be provided; otherwise nothing is cleaned.
   
