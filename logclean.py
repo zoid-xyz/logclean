@@ -17,12 +17,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # TODO
-# Add computation time display (how long did this take to clean?)
-# Add disk savings display (how much disk space have I saved?)
 
 import os
 import sys
 import getopt
+from time import monotonic
 
 def load_botfile(bfile):
     botfile = os.path.abspath(bfile)
@@ -51,7 +50,7 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
             split = stripped.split()
             if not split:
                 continue
-            if join_part and len(split) > 1 and split[1] == "***":
+            if join_part and len(split) > 2 and split[1] == "***":
                 if split[2] in ['Joins:', 'Parts:', 'Quits:']:
                     continue
             if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
@@ -169,15 +168,23 @@ def main():
         else:
             print_out("Proceeding without confirmation.", quiet)
         print_out("Cleaning...", quiet)
+        start_time = monotonic()
         sorted_logfiles = sorted(logfiles)
         for logfile in sorted_logfiles:
             try:
                 savings = clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet)
                 space_saved = space_saved + savings
             except FileNotFoundError:
-                print(f"{logfile}: file not found, skipping.")
+                print_out(f"{logfile}: file not found, skipping.", quiet)
+        end_time = monotonic()
+        elapsed = round(end_time - start_time, 3)
+
+    print_out(f"Cleaning duration: {elapsed} seconds.", quiet)
     savings_rounded = round(space_saved, 2)
-    print_out(f"Total recovery: {savings_rounded}mb.", quiet)
+    if replace_logs:
+        print_out(f"Total recovery: {savings_rounded}mb.", quiet)
+    else:
+        print_out(f"Cleaned files are {savings_rounded}mb smaller.", quiet)
     sys.exit(0)
 
 if __name__ == "__main__":
