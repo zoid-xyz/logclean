@@ -29,7 +29,7 @@ def load_botfile(bfile):
     botfile_bots = []
     with open(botfile, "r", encoding='utf-8', errors='replace') as bot_file:
         for nick in bot_file:
-            botfile_bots.append(nick.strip("\n"))
+            botfile_bots.append(nick.rstrip("\n"))
     return botfile_bots
 
 def load_logfiles(logpath):
@@ -51,8 +51,8 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
             if not split:
                 continue
             if join_part and len(split) > 1 and split[1] == "***":
-                # This removes all channel events, not just JOINS/PARTS.
-                continue
+                if split[2] in ['Joins:', 'Parts:', 'Quits:']:
+                    continue
             if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
                 continue
             outfile.write(line)
