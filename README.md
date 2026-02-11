@@ -30,7 +30,7 @@ logclean [options]
 Flags:
 -c           : Clean all logs in the provided directory
 -b <botfile> : Purge bot messages based on botfile
--j           : Remove JOIN/PART messages
+-j           : Remove join/part messages
 -l <logfile> : Specify a single log file to clean
 -r           : Removes original logs, replaces with cleaned logs
 -y           : Proceed without confirmation (use with caution)

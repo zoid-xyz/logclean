@@ -17,12 +17,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # TODO
-# !!! Directory search is broken-ish, it only looks for .log files in the provided directory, not subdirectories.
-# !!! Among other issues.
-# !!! Botfile will only load if it's in the same directory as the script.
 # Add computation time display (how long did this take to clean?)
 # Add disk savings display (how much disk space have I saved?)
-# Add a license
 
 import os
 import sys
@@ -115,7 +111,7 @@ def main():
                     print("Flags:")
                     print("-c           : Clean all logs in the provided directory")
                     print("-b <botfile> : Purge bot messages based on botfile")
-                    print("-j           : Remove JOIN/PART messages")
+                    print("-j           : Remove join/part messages")
                     print("-l <logfile> : Specify a single log file to clean")
                     print("-r           : Removes original logs replaces with cleaned logs")
                     print("-y           : Proceed without confirmation (use with caution)")
@@ -137,9 +133,9 @@ def main():
         elif purge_bots and not join_part:
             print("Purging bots.")
         elif join_part and not purge_bots:
-            print("Purging JOIN/PART messages.")
+            print("Purging join/part messages.")
         elif purge_bots and join_part:
-            print("Purging bots and JOIN/PART messages.")
+            print("Purging bots and join/part messages.")
         if not noauth_clean:
             confirm = input(f"Are you sure you want to clean logs? (y/n): ")
             if confirm.lower() != 'y':
