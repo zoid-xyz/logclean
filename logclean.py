@@ -26,9 +26,13 @@ from datetime import datetime
 from pathlib import Path
 
 LOGGING = True
-LOGCLEAN_DIR = Path.home() / ".logclean"
-LOGCLEAN_FILE = LOGCLEAN_DIR / "logclean.log"
-LOGCLEAN_DIR.mkdir(exist_ok=True)
+if LOGGING:
+    LOGCLEAN_DIR = Path.home() / ".logclean"
+    LOGCLEAN_FILE = LOGCLEAN_DIR / "logclean.log"
+    LOGCLEAN_DIR.mkdir(exist_ok=True)
+else:
+    LOGCLEAN_DIR = None
+    LOGCLEAN_FILE = None
 
 def load_botfile(bfile):
     botfile = os.path.abspath(bfile)
