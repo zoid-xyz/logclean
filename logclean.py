@@ -39,9 +39,10 @@ def load_logfiles(logpath):
             logfiles.append(os.path.join(logpath, file))
     return logfiles
 
-def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
+def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
     filename, _ = os.path.splitext(logfile)
     tmpfile = f"{filename}.tmp"
+    original_filesize = os.path.getsize(logfile)
     with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
 
@@ -56,9 +57,17 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
             if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
                 continue
             outfile.write(line)
-    print(f"{logfile} cleaned.")
+        
+    cleaned_filesize = os.path.getsize(tmpfile)
+    space_savings = round((original_filesize - cleaned_filesize) / 1048576, 2)
+    print_out(f"{logfile} cleaned. {space_savings}mb saved.", quiet)
     if replace_logs:
         os.replace(tmpfile, logfile)
+    return space_savings
+
+def print_out(data, quiet):
+    if not quiet:
+        print(data)
 
 def main():
     argc = len(sys.argv)
@@ -69,20 +78,22 @@ def main():
     replace_logs = None
     dir_clean = None
     file_clean = None
+    quiet = None
+    space_saved = 0
     bots = []
     botfile = "botfile.txt"
     logfiles = []
-    usage = "Usage: logclean [options -c -b -j -h -y -l -r]"
+    usage = "Usage: logclean [options -d -b -j -h -y -l -r -q]"
 
     if argc <= 1:
         print(usage)
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(argv, "c:b:l:rjhy")
+        opts, args = getopt.getopt(argv, "d:b:l:rjhqy")
 
         for opt, val in opts:
             match opt:
-                case "-c":
+                case "-d":
                     dir_clean = True
                     try:
                         logfiles = load_logfiles(val)
@@ -113,14 +124,18 @@ def main():
                 case "-y":
                     noauth_clean = True
                 
+                case "-q":
+                    quiet = True
+                
                 case "-h":
                     print(usage)
                     print("Flags:")
-                    print("-c <dir>     : Clean all logs in the provided directory")
+                    print("-d <dir>     : Clean all logs in the provided directory")
                     print("-b <botfile> : Purge bot messages based on botfile")
                     print("-j           : Remove join/part messages")
                     print("-l <logfile> : Specify a single log file to clean")
                     print("-r           : Removes original logs replaces with cleaned logs")
+                    print("-q           : Quiet; does not print output to terminal")
                     print("-y           : Proceed without confirmation (use with caution)")
                     print("-h           : Display this help message")
                     sys.exit(0)
@@ -132,34 +147,37 @@ def main():
 
     if not logfiles:
         print("No log files found to clean. Exiting.")
-        sys.exit(1)
+        sys.exit(65)
     elif dir_clean and file_clean:
-        print("Conflicting flags: -l and -c; Exiting.")
+        print("Conflicting flags: -l and -d; Exiting.")
         sys.exit(1)
     else:
         if not purge_bots and not join_part:
             print("No flags provided, nothing to clean.")
             sys.exit(1)
         elif purge_bots and not join_part:
-            print("Purging bots.")
+            print_out("Purging bots.", quiet)
         elif join_part and not purge_bots:
-            print("Purging join/part messages.")
+            print_out("Purging join/part messages.", quiet)
         elif purge_bots and join_part:
-            print("Purging bots and join/part messages.")
+            print_out("Purging bots and join/part messages.", quiet)
         if not noauth_clean:
             confirm = input(f"Are you sure you want to clean logs? (y/n): ")
             if confirm.lower() != 'y':
                 print("Aborting.")
                 sys.exit(1)
         else:
-            print("Proceeding without confirmation.")
-        print("Cleaning...")
+            print_out("Proceeding without confirmation.", quiet)
+        print_out("Cleaning...", quiet)
         sorted_logfiles = sorted(logfiles)
         for logfile in sorted_logfiles:
             try:
-                clean_logs(logfile, join_part, purge_bots, bots, replace_logs)
+                savings = clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet)
+                space_saved = space_saved + savings
             except FileNotFoundError:
                 print(f"{logfile}: file not found, skipping.")
+    savings_rounded = round(space_saved, 2)
+    print_out(f"Total recovery: {savings_rounded}mb.", quiet)
     sys.exit(0)
 
 if __name__ == "__main__":
