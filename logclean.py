@@ -29,15 +29,15 @@ import sys
 import getopt
 
 def load_botfile(bfile):
-    # this only works if the botfile is in the same directory as the script.
+    path = os.getcwd()
     botfile_bots = []
-    with open(bfile, "r", encoding='utf-8', errors='replace') as bot_file:
+    path_botfile = f"{path}/{bfile}"
+    with open(path_botfile, "r", encoding='utf-8', errors='replace') as bot_file:
         for nick in bot_file:
             botfile_bots.append(nick.strip("\n"))
     return botfile_bots
 
 def load_logfiles(logpath):
-    # this does not work if the file is provided with -l 
     logfiles = []
     for file in os.listdir(logpath):
         if file.endswith(".log"):
@@ -57,6 +57,7 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
             if not split:
                 continue
             if join_part and len(split) > 1 and split[1] == "***":
+                # This removes all channel events, not just JOINS/PARTS.
                 continue
             if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
                 continue
