@@ -25,10 +25,9 @@ import sys
 import getopt
 
 def load_botfile(bfile):
-    path = os.getcwd()
+    botfile = os.path.abspath(bfile)
     botfile_bots = []
-    path_botfile = f"{path}/{bfile}"
-    with open(path_botfile, "r", encoding='utf-8', errors='replace') as bot_file:
+    with open(botfile, "r", encoding='utf-8', errors='replace') as bot_file:
         for nick in bot_file:
             botfile_bots.append(nick.strip("\n"))
     return botfile_bots
@@ -37,12 +36,11 @@ def load_logfiles(logpath):
     logfiles = []
     for file in os.listdir(logpath):
         if file.endswith(".log"):
-            logfiles.append(f"{logpath}/{file}")
+            logfiles.append(os.path.join(logpath, file))
     return logfiles
 
 def clean_logs(logfile, join_part, purge_bots, bots, replace_logs):
-    # THIS WORKS
-    filename = logfile.split(".")[0] # <-- need to fix this though.
+    filename, _ = os.path.splitext(logfile)
     tmpfile = f"{filename}.tmp"
     with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
@@ -69,12 +67,15 @@ def main():
     purge_bots = None
     noauth_clean = None
     replace_logs = None
+    dir_clean = None
+    file_clean = None
     bots = []
     botfile = "botfile.txt"
     logfiles = []
+    usage = "Usage: logclean [options -c -b -j -h -y -l -r]"
 
     if argc <= 1:
-        print("Usage: logclean <filename>.log [options -c -b -j -h -y -l -r]")
+        print(usage)
         sys.exit(1)
     try:
         opts, args = getopt.getopt(argv, "c:b:l:rjhy")
@@ -82,7 +83,12 @@ def main():
         for opt, val in opts:
             match opt:
                 case "-c":
-                    logfiles = load_logfiles(val)
+                    dir_clean = True
+                    try:
+                        logfiles = load_logfiles(val)
+                    except FileNotFoundError:
+                        print(f"Directory {val} not found. Exiting.")
+                        sys.exit(65)
                 
                 case "-b":
                     purge_bots = True
@@ -98,6 +104,7 @@ def main():
                     join_part = True
                 
                 case "-l":
+                    file_clean = True
                     logfiles.append(val)
                 
                 case "-r":
@@ -107,9 +114,9 @@ def main():
                     noauth_clean = True
                 
                 case "-h":
-                    print("Usage: logclean <filename>.log [options -c -b -j -h]")
+                    print(usage)
                     print("Flags:")
-                    print("-c           : Clean all logs in the provided directory")
+                    print("-c <dir>     : Clean all logs in the provided directory")
                     print("-b <botfile> : Purge bot messages based on botfile")
                     print("-j           : Remove join/part messages")
                     print("-l <logfile> : Specify a single log file to clean")
@@ -120,11 +127,14 @@ def main():
 
     except getopt.GetoptError as err:
         print(err)
-        print("Usage: logclean <filename>.log [options -c -b -j -h]")
+        print(usage)
         sys.exit(2)
 
     if not logfiles:
         print("No log files found to clean. Exiting.")
+        sys.exit(1)
+    elif dir_clean and file_clean:
+        print("Conflicting flags: -l and -c; Exiting.")
         sys.exit(1)
     else:
         if not purge_bots and not join_part:
@@ -144,8 +154,12 @@ def main():
         else:
             print("Proceeding without confirmation.")
         print("Cleaning...")
-        for logfile in logfiles:
-            clean_logs(logfile, join_part, purge_bots, bots, replace_logs)
+        sorted_logfiles = sorted(logfiles)
+        for logfile in sorted_logfiles:
+            try:
+                clean_logs(logfile, join_part, purge_bots, bots, replace_logs)
+            except FileNotFoundError:
+                print(f"{logfile}: file not found, skipping.")
     sys.exit(0)
 
 if __name__ == "__main__":
