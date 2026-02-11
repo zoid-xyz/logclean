@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2026, zoid@pm.me
+# Copyright (c) 2026, zoid <zoid.xyz@pm.me>
 #
 # All rights reserved.
 #

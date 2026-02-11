@@ -10,7 +10,14 @@ many of which have bots and plenty of ASCII art. I enjoy keeping my
 logs long term, but due to the volume of ASCII art the logs get quite
 large. By putting the bots into a botfile.txt and loading it I can
 purge all bots and ASCII art. This script also allows me to purge
-all JOINS/PARTS as those are also unnecessary for my uses.
+all join/part messages as those are also unnecessary for my uses.
+
+This script assumes your logs are saved in the traditional ZNC log
+format.
+
+ie: 
+[HH:MM:SS] <usernick> message
+[00:01:41] *** Joins: usernick (~usernick@user/usernick) usernick
 
 ## Installation
 1. Clone the repository:
