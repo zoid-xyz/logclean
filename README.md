@@ -26,6 +26,15 @@ all JOINS/PARTS as those are also unnecessary for my uses.
 To run the project, use the following command:
 ```bash
 logclean [options]
+
+Flags:
+-c           : Clean all logs in the provided directory
+-b <botfile> : Purge bot messages based on botfile
+-j           : Remove JOIN/PART messages
+-l <logfile> : Specify a single log file to clean
+-r           : Removes original logs, replaces with cleaned logs
+-y           : Proceed without confirmation (use with caution)
+-h           : Display this help message
 ```
 
 ## License

@@ -117,7 +117,7 @@ def main():
                     print("-b <botfile> : Purge bot messages based on botfile")
                     print("-j           : Remove JOIN/PART messages")
                     print("-l <logfile> : Specify a single log file to clean")
-                    print("-r           : Removes original logs, replaces with cleaned logs.")
+                    print("-r           : Removes original logs replaces with cleaned logs")
                     print("-y           : Proceed without confirmation (use with caution)")
                     print("-h           : Display this help message")
                     sys.exit(0)
