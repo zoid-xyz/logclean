@@ -99,9 +99,6 @@ This script removes only join/part/quit messages with the -j flag. Other
 channel events are preserved.  
 
 ## Todo
-Add computation time display (how long did this take to clean?)
-  
-Add disk savings display (how much disk space have I saved?)
   
 Add -o &lt;output_dir&gt; option.
 
