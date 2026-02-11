@@ -17,11 +17,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # TODO
+# Finish implementing logging to file when -q is provided.
+# Create .logclean/ in homedir to store logclean.conf/log
 
 import os
 import sys
 import getopt
 from time import monotonic
+from datetime import datetime
 
 def load_botfile(bfile):
     botfile = os.path.abspath(bfile)
@@ -67,6 +70,20 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
 def print_out(data, quiet):
     if not quiet:
         print(data)
+'''
+    # I need to store this logfile in the users homedir. .logclean.log ?
+    Perhaps a .logclean directory to store logclean.log and logclean.conf
+
+    elif quiet:
+        timestamp = datetime.now().strftime('%Y-%m-%d [%H:%M:%S]')
+        try:
+            with open("logclean.log", "a") as logging:
+                logging.write(f"{timestamp} {data}\n")
+        except Exception:
+            pass
+    else:
+        pass
+'''
 
 def main():
     argc = len(sys.argv)
@@ -167,6 +184,7 @@ def main():
                 sys.exit(1)
         else:
             print_out("Proceeding without confirmation.", quiet)
+
         print_out("Cleaning...", quiet)
         start_time = monotonic()
         sorted_logfiles = sorted(logfiles)
