@@ -53,6 +53,7 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
     filename, _ = os.path.splitext(logfile)
     tmpfile = f"{filename}.tmp"
     original_filesize = os.path.getsize(logfile)
+    lines_removed = 0
     with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
 
@@ -63,8 +64,10 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
                 continue
             if join_part and len(split) > 2 and split[1] == "***":
                 if split[2] in ['Joins:', 'Parts:', 'Quits:']:
+                    lines_removed += 1
                     continue
             if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
+                lines_removed += 1
                 continue
             outfile.write(line)
         
@@ -73,7 +76,7 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
     print_out(f"{logfile} cleaned. {space_savings}mb saved.", quiet)
     if replace_logs:
         os.replace(tmpfile, logfile)
-    return space_savings
+    return space_savings, lines_removed
 
 def logclean_log(data):
     try:
@@ -99,6 +102,7 @@ def main():
     file_clean = None
     quiet = None
     space_saved = 0
+    lines_purged = 0
     bots = []
     botfile = "botfile.txt"
     logfiles = []
@@ -194,8 +198,9 @@ def main():
         sorted_logfiles = sorted(logfiles)
         for logfile in sorted_logfiles:
             try:
-                savings = clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet)
+                savings, lines_removed = clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet)
                 space_saved += savings
+                lines_purged += lines_removed
             except FileNotFoundError:
                 print_out(f"{logfile}: file not found, skipping.", quiet)
         end_time = monotonic()
@@ -204,9 +209,9 @@ def main():
     print_out(f"Cleaning duration: {elapsed} seconds.", quiet)
     savings_rounded = round(space_saved, 2)
     if replace_logs:
-        print_out(f"Total recovery: {savings_rounded}mb.", quiet)
+        print_out(f"Lines removed: {lines_purged}\nTotal recovery: {savings_rounded}mb.", quiet)
     else:
-        print_out(f"Cleaned files are {savings_rounded}mb smaller.", quiet)
+        print_out(f"Lines removed: {lines_purged}\nCleaned files are {savings_rounded}mb smaller.", quiet)
     sys.exit(0)
 
 if __name__ == "__main__":
