@@ -92,6 +92,8 @@ Without -r, cleaned logs are written to .tmp files.
   
 The script is designed for ZNC logs but works with any compatible format.
   
+`logclean` only parses files and cleans files ending in *.log
+  
 This script removes only join/part/quit messages with the -j flag. Other
 channel events are preserved.
   
@@ -108,6 +110,6 @@ Began using pathlib for logclean logging, implement pathlib everywhere applicabl
 Implement STDIN/STDOUT to support UNIX pipes in both directions. (for a future project in mind)
   
 Add to the logclean stats already implemented, removed/kept lines, etc.
-
+  
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
