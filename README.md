@@ -103,7 +103,11 @@ only strip() and simple comparisons.
 
 ## Todo
   
-Add -o &lt;output_dir&gt; option.
+Began using pathlib for logclean logging, implement pathlib everywhere applicable.
+  
+Implement STDIN/STDOUT to support UNIX pipes in both directions. (for a future project in mind)
+  
+Add to the logclean stats already implemented, removed/kept lines, etc.
 
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
