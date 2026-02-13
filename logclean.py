@@ -66,7 +66,10 @@ def should_purge(line, join_part, purge_bots, bots):
 def stdin_parse(stream, join_part, purge_bots, bots):
     purge = should_purge(stream, join_part, purge_bots, bots)
     if not purge:
-        print(stream)
+        try:
+            print(stream)
+        except BrokenPipeError:
+            sys.exit(1)
 
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     filename, _ = os.path.splitext(logfile)
