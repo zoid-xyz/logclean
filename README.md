@@ -36,7 +36,7 @@ It assumes traditional ZNC log formatting such as:
 
 ## Installation
 
-1. Clone the SourceHut(https://git.sr.ht/~zoid/logclean-python) repository:
+1. Clone the [SourceHut](https://git.sr.ht/~zoid/logclean-python) repository:
 
 ```bash
 git clone https://git.sr.ht/~zoid/logclean-python
