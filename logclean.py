@@ -49,7 +49,25 @@ def load_logfiles(logpath):
             logfiles.append(os.path.join(logpath, file))
     return logfiles
 
-def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
+def clean_logs(line, join_part, purge_bots, bots):
+    stripped = line.rstrip("\n")
+    split = stripped.split()
+    lines_removed = 0
+    purge = False
+
+    if not split:
+        pass
+    if join_part and len(split) > 2 and split[1] == "***":
+        if split[2] in ['Joins:', 'Parts:', 'Quits:']:
+            lines_removed += 1
+            purge = True
+    if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
+        purge = True
+        lines_removed += 1
+
+    return lines_removed, purge
+
+def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     filename, _ = os.path.splitext(logfile)
     tmpfile = f"{filename}.tmp"
     original_filesize = os.path.getsize(logfile)
@@ -58,24 +76,18 @@ def clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet):
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
 
         for line in infile:
-            stripped = line.rstrip("\n")
-            split = stripped.split()
-            if not split:
-                continue
-            if join_part and len(split) > 2 and split[1] == "***":
-                if split[2] in ['Joins:', 'Parts:', 'Quits:']:
-                    lines_removed += 1
-                    continue
-            if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
-                lines_removed += 1
-                continue
-            outfile.write(line)
+            purge_count, purge = clean_logs(line, join_part, purge_bots, bots)
+            lines_removed += purge_count
+            if not purge:
+                outfile.write(line)
         
     cleaned_filesize = os.path.getsize(tmpfile)
     space_savings = round((original_filesize - cleaned_filesize) / 1048576, 2)
     print_out(f"{logfile} cleaned. {space_savings}mb saved.", quiet)
     if replace_logs:
         os.replace(tmpfile, logfile)
+    elif dry_run:
+        os.remove(tmpfile)
     return space_savings, lines_removed
 
 def logclean_log(data):
@@ -100,6 +112,7 @@ def main():
     replace_logs = None
     dir_clean = None
     file_clean = None
+    dry_run = None
     quiet = None
     space_saved = 0
     lines_purged = 0
@@ -112,18 +125,10 @@ def main():
         print(usage)
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(argv, "d:b:l:rjhqy")
+        opts, args = getopt.getopt(argv, "b:d:l:hjqrty")
 
         for opt, val in opts:
             match opt:
-                case "-d":
-                    dir_clean = True
-                    try:
-                        logfiles = load_logfiles(val)
-                    except FileNotFoundError:
-                        print(f"Directory {val} not found. Exiting.")
-                        sys.exit(65)
-                
                 case "-b":
                     purge_bots = True
                     if val:
@@ -132,6 +137,14 @@ def main():
                         bots = load_botfile(botfile)
                     except FileNotFoundError:
                         print(f"Botfile {botfile} not found. Exiting.")
+                        sys.exit(65)
+
+                case "-d":
+                    dir_clean = True
+                    try:
+                        logfiles = load_logfiles(val)
+                    except FileNotFoundError:
+                        print(f"Directory {val} not found. Exiting.")
                         sys.exit(65)
                 
                 case "-j":
@@ -143,12 +156,15 @@ def main():
                 
                 case "-r":
                     replace_logs = True
+
+                case "-t":
+                    dry_run = True
+
+                case "-q":
+                    quiet = True
                 
                 case "-y":
                     noauth_clean = True
-                
-                case "-q":
-                    quiet = True
                 
                 case "-h":
                     print(usage)
@@ -174,6 +190,9 @@ def main():
     elif dir_clean and file_clean:
         print("Conflicting flags: -l and -d; Exiting.")
         sys.exit(1)
+    elif replace_logs and dry_run:
+        print("Conflicting flags: -r and -t; Exiting.")
+        sys.exit(1)
     else:
         if not purge_bots and not join_part:
             print("No flags provided, nothing to clean.")
@@ -198,7 +217,7 @@ def main():
         sorted_logfiles = sorted(logfiles)
         for logfile in sorted_logfiles:
             try:
-                savings, lines_removed = clean_logs(logfile, join_part, purge_bots, bots, replace_logs, quiet)
+                savings, lines_removed = parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet)
                 space_saved += savings
                 lines_purged += lines_removed
             except FileNotFoundError:
@@ -209,9 +228,11 @@ def main():
     print_out(f"Cleaning duration: {elapsed} seconds.", quiet)
     savings_rounded = round(space_saved, 2)
     if replace_logs:
-        print_out(f"Lines removed: {lines_purged}\nTotal recovery: {savings_rounded}mb.", quiet)
+        print_out(f"Lines purged: {lines_purged}\nTotal recovery: {savings_rounded}mb.", quiet)
+    elif dry_run:
+        print_out(f"{lines_purged} lines would be purged.\nCleaned files would be {savings_rounded}mb smaller.", quiet)
     else:
-        print_out(f"Lines removed: {lines_purged}\nCleaned files are {savings_rounded}mb smaller.", quiet)
+        print_out(f"Lines purged: {lines_purged}\nCleaned files are {savings_rounded}mb smaller.", quiet)
     sys.exit(0)
 
 if __name__ == "__main__":
