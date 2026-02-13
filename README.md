@@ -65,7 +65,7 @@ Flags:
 -l <logfile> : Specify a single log file to clean
 -q           : Quiet; does not print output to terminal
 -r           : Removes original logs, replaces with cleaned logs
--t           : Testing (dry run), displays would-be savings"
+-t           : Testing (dry run), displays would-be savings
 -y           : Proceed without confirmation (use with caution)
 -h           : Display this help message
 ```
