@@ -105,13 +105,8 @@ only strip() and simple comparisons.
 ## Todo
   
 Began using pathlib for logclean logging, implement pathlib everywhere applicable.
-  
-Implement STDIN/STDOUT to support UNIX pipes in both directions. (for a future project in mind)
-  
+   
 Add to the logclean stats already implemented, removed/kept lines, etc.
-  
-Implement a dry run feature, allow user to test script on logs without modifying them
-so the user can see what space will be saved on their system.
-  
+    
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
