@@ -36,10 +36,19 @@ It assumes traditional ZNC log formatting such as:
 
 ## Installation
 
-1. Clone the repository:
+1. Clone the (SourceHut) repository:
 
 ```bash
 git clone https://git.sr.ht/~zoid/logclean-python
+chmod +x logclean.py
+sudo mv logclean.py /usr/local/bin/logclean
+```
+  
+or
+  
+1. Clone the (Github) repository:
+```bash
+git clone https://github.com/zoid-xyz/logclean.git
 chmod +x logclean.py
 sudo mv logclean.py /usr/local/bin/logclean
 ```
