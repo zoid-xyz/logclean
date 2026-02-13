@@ -35,17 +35,6 @@ It assumes traditional ZNC log formatting such as:
 [HH:MM:SS] *** Joins: alcamus (~alcamus@user/alcamus) alcamus
 
 ## Installation
-
-1. Clone the [SourceHut](https://git.sr.ht/~zoid/logclean-python) repository:
-
-```bash
-git clone https://git.sr.ht/~zoid/logclean-python
-chmod +x logclean.py
-sudo mv logclean.py /usr/local/bin/logclean
-```
-
-or  
-
 1. Clone the [Github](https://github.com/zoid-xyz/logclean.git) repository:
 ```bash
 git clone https://github.com/zoid-xyz/logclean.git
