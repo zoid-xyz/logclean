@@ -107,6 +107,6 @@ only strip() and simple comparisons.
 Began using pathlib for logclean logging, implement pathlib everywhere applicable.
    
 Add to the logclean stats already implemented, removed/kept lines, etc.
-    
+  
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
