@@ -36,23 +36,24 @@ It assumes traditional ZNC log formatting such as:
 
 ## Installation
 
-1. Clone the (SourceHut) repository:
-
+1. Clone the [Sourcehut](https://git.sr.ht/~zoid/logclean-python) repository:
 ```bash
 git clone https://git.sr.ht/~zoid/logclean-python
-chmod +x logclean.py
-sudo mv logclean.py /usr/local/bin/logclean
 ```
   
 or
   
-1. Clone the (Github) repository:
-```bash
+1. Clone the [Github](https://github.com/zoid-xyz/logclean.git) repository:
+```
 git clone https://github.com/zoid-xyz/logclean.git
+```
+  
+2. Make Executable & Install
+```
 chmod +x logclean.py
 sudo mv logclean.py /usr/local/bin/logclean
 ```
-
+  
 ## Usage
 To run the project, use the following command:
 ```bash
