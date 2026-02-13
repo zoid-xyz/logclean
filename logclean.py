@@ -49,23 +49,19 @@ def load_logfiles(logpath):
             logfiles.append(os.path.join(logpath, file))
     return logfiles
 
-def clean_logs(line, join_part, purge_bots, bots):
-    stripped = line.rstrip("\n")
-    split = stripped.split()
-    lines_removed = 0
+def should_purge(line, join_part, purge_bots, bots):
+    split = line.split()
     purge = False
 
     if not split:
-        pass
+        return False
     if join_part and len(split) > 2 and split[1] == "***":
         if split[2] in ['Joins:', 'Parts:', 'Quits:']:
-            lines_removed += 1
             purge = True
     if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
         purge = True
-        lines_removed += 1
 
-    return lines_removed, purge
+    return purge
 
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     filename, _ = os.path.splitext(logfile)
@@ -76,9 +72,10 @@ def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quie
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
 
         for line in infile:
-            purge_count, purge = clean_logs(line, join_part, purge_bots, bots)
-            lines_removed += purge_count
-            if not purge:
+            purge = should_purge(line, join_part, purge_bots, bots)
+            if purge:
+                lines_removed += 1
+            else:
                 outfile.write(line)
         
     cleaned_filesize = os.path.getsize(tmpfile)
@@ -134,10 +131,10 @@ def main():
                     if val:
                         botfile = val
                     try:
-                        bots = load_botfile(botfile)
+                        bots = set(load_botfile(botfile))
                     except FileNotFoundError:
                         print(f"Botfile {botfile} not found. Exiting.")
-                        sys.exit(65)
+                        sys.exit(2)
 
                 case "-d":
                     dir_clean = True
@@ -145,7 +142,7 @@ def main():
                         logfiles = load_logfiles(val)
                     except FileNotFoundError:
                         print(f"Directory {val} not found. Exiting.")
-                        sys.exit(65)
+                        sys.exit(2)
                 
                 case "-j":
                     join_part = True
@@ -175,7 +172,7 @@ def main():
                     print("-l <logfile> : Specify a single log file to clean")
                     print("-q           : Quiet; does not print output to terminal")
                     print("-r           : Removes original logs replaces with cleaned logs")
-                    print("-t           : Testing mode, displays would-be savings")
+                    print("-t           : Testing (dry run), displays would-be savings")
                     print("-y           : Proceed without confirmation (use with caution)")
                     print("-h           : Display this help message")
                     sys.exit(0)
