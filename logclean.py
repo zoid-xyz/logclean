@@ -63,6 +63,11 @@ def should_purge(line, join_part, purge_bots, bots):
 
     return purge
 
+def stdin_parse(stream, join_part, purge_bots, bots):
+    purge = should_purge(stream, join_part, purge_bots, bots)
+    if not purge:
+        print(stream)
+
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     filename, _ = os.path.splitext(logfile)
     tmpfile = f"{filename}.tmp"
@@ -111,11 +116,12 @@ def main():
     file_clean = None
     dry_run = None
     quiet = None
+    stdin = not sys.stdin.isatty()
+    logfiles = None if stdin else []
     space_saved = 0
     lines_purged = 0
     bots = []
     botfile = "botfile.txt"
-    logfiles = []
     usage = "Usage: logclean [options -d -b -j -h -y -l -r -q]"
 
     if argc <= 1:
@@ -137,19 +143,27 @@ def main():
                         sys.exit(2)
 
                 case "-d":
-                    dir_clean = True
-                    try:
-                        logfiles = load_logfiles(val)
-                    except FileNotFoundError:
-                        print(f"Directory {val} not found. Exiting.")
+                    if stdin:
+                        print("Cannot use -d when reading from stdin.")
                         sys.exit(2)
+                    else:
+                        dir_clean = True
+                        try:
+                            logfiles = load_logfiles(val)
+                        except FileNotFoundError:
+                            print(f"Directory {val} not found. Exiting.")
+                            sys.exit(2)
                 
                 case "-j":
                     join_part = True
                 
                 case "-l":
-                    file_clean = True
-                    logfiles.append(val)
+                    if stdin:
+                        print("Cannot use -l when reading from stdin.")
+                        sys.exit(2)
+                    else:
+                        file_clean = True
+                        logfiles.append(val)
                 
                 case "-r":
                     replace_logs = True
@@ -182,15 +196,19 @@ def main():
         print(usage)
         sys.exit(2)
 
-    if not logfiles:
+    if not logfiles and not stdin:
         print("No log files found to clean. Exiting.")
-        sys.exit(65)
+        sys.exit(2)
     elif dir_clean and file_clean:
         print("Conflicting flags: -l and -d; Exiting.")
         sys.exit(1)
     elif replace_logs and dry_run:
         print("Conflicting flags: -r and -t; Exiting.")
         sys.exit(1)
+    elif stdin:
+        for line in sys.stdin:
+            stdin_parse(line.rstrip("\n"), join_part, purge_bots, bots)
+        sys.exit(0)
     else:
         if not purge_bots and not join_part:
             print("No flags provided, nothing to clean.")
