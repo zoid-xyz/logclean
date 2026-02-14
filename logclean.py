@@ -70,6 +70,8 @@ def stdin_parse(stream, join_part, purge_bots, bots):
             print(stream)
         except BrokenPipeError:
             sys.exit(1)
+        except KeyboardInterrupt:
+            sys.exit(1)
 
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     filename, _ = os.path.splitext(logfile)
