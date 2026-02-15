@@ -119,10 +119,6 @@ def logclean_interactive(logfiles, join_part, purge_bots, bots, replace_logs, dr
             print_out(f"{logfile}: file not found, skipping.", quiet)
     end_time = monotonic()
     elapsed = round(end_time - start_time, 3)
-    logclean_stats(elapsed, lines_purged, space_saved, replace_logs, dry_run, quiet)
-
-
-def logclean_stats(elapsed, lines_purged, space_saved, replace_logs, dry_run, quiet):
     print_out(f"Cleaning duration: {elapsed} seconds.", quiet)
     savings_rounded = round(space_saved, 2)
     if replace_logs:
