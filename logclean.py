@@ -34,20 +34,23 @@ else:
     LOGCLEAN_DIR = None
     LOGCLEAN_FILE = None
 
+
 def load_botfile(bfile):
     botfile = os.path.abspath(bfile)
     botfile_bots = []
-    with open(botfile, 'r', encoding='utf-8', errors='replace') as bot_file:
+    with open(botfile, "r", encoding="utf-8", errors="replace") as bot_file:
         for nick in bot_file:
             botfile_bots.append(nick.rstrip("\n"))
     return botfile_bots
 
+
 def load_logfiles(logpath):
     logfiles = []
     for file in os.listdir(logpath):
-        if file.endswith('.log'):
+        if file.endswith(".log"):
             logfiles.append(os.path.join(logpath, file))
     return logfiles
+
 
 def should_purge(line, join_part, purge_bots, bots):
     split = line.split()
@@ -56,12 +59,13 @@ def should_purge(line, join_part, purge_bots, bots):
     if not split:
         return False
     if join_part and len(split) > 2 and split[1] == "***":
-        if split[2] in ['Joins:', 'Parts:', 'Quits:']:
+        if split[2] in ["Joins:", "Parts:", "Quits:"]:
             purge = True
     if purge_bots and len(split) > 1 and split[1].strip("<>") in bots:
         purge = True
 
     return purge
+
 
 def stdin_parse(stream, join_part, purge_bots, bots):
     purge = should_purge(stream, join_part, purge_bots, bots)
@@ -73,6 +77,7 @@ def stdin_parse(stream, join_part, purge_bots, bots):
         except KeyboardInterrupt:
             sys.exit(1)
 
+
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     filename, _ = os.path.splitext(logfile)
     tmpfile = f"{filename}.tmp"
@@ -80,14 +85,14 @@ def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quie
     lines_removed = 0
     with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
         open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
-
+        
         for line in infile:
             purge = should_purge(line, join_part, purge_bots, bots)
             if purge:
                 lines_removed += 1
             else:
                 outfile.write(line)
-        
+
     cleaned_filesize = os.path.getsize(tmpfile)
     space_savings = round((original_filesize - cleaned_filesize) / 1048576, 2)
     print_out(f"{logfile} cleaned. {space_savings}mb saved.", quiet)
@@ -97,18 +102,51 @@ def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quie
         os.remove(tmpfile)
     return space_savings, lines_removed
 
+
+def logclean_interactive(logfiles, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
+    space_saved = 0
+    lines_purged = 0
+    timestamp = datetime.now().strftime("%Y-%m-%d [%H:%M:%S]")
+    print_out(f"{timestamp} Cleaning...", quiet)
+    start_time = monotonic()
+    sorted_logfiles = sorted(logfiles)
+    for logfile in sorted_logfiles:
+        try:
+            savings, lines_removed = parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet)
+            space_saved += savings
+            lines_purged += lines_removed
+        except FileNotFoundError:
+            print_out(f"{logfile}: file not found, skipping.", quiet)
+    end_time = monotonic()
+    elapsed = round(end_time - start_time, 3)
+    logclean_stats(elapsed, lines_purged, space_saved, replace_logs, dry_run, quiet)
+
+
+def logclean_stats(elapsed, lines_purged, space_saved, replace_logs, dry_run, quiet):
+    print_out(f"Cleaning duration: {elapsed} seconds.", quiet)
+    savings_rounded = round(space_saved, 2)
+    if replace_logs:
+        print_out(f"Lines purged: {lines_purged}\nTotal recovery: {savings_rounded}mb.", quiet)
+    elif dry_run:
+        print_out(f"{lines_purged} lines would be purged.\nCleaned files would be {savings_rounded}mb smaller.", quiet)
+    else:
+        print_out(f"Lines purged: {lines_purged}\nCleaned files are {savings_rounded}mb smaller.", quiet)
+
+
 def logclean_log(data):
     try:
-        with open(LOGCLEAN_FILE, 'a', encoding='utf-8', errors='replace') as logging:
+        with open(LOGCLEAN_FILE, "a", encoding="utf-8", errors="replace") as logging:
             logging.write(f"{data}\n")
     except Exception:
         print("Couldn't open logclean log file.")
+
 
 def print_out(data, quiet):
     if quiet and LOGGING:
         logclean_log(data)
     elif not quiet:
         print(data)
+
 
 def main():
     argc = len(sys.argv)
@@ -123,8 +161,6 @@ def main():
     quiet = None
     stdin = not sys.stdin.isatty()
     logfiles = None if stdin else []
-    space_saved = 0
-    lines_purged = 0
     bots = []
     botfile = "botfile.txt"
     usage = "Usage: logclean [options -d -b -j -h -y -l -r -q]"
@@ -158,10 +194,10 @@ def main():
                         except FileNotFoundError:
                             print(f"Directory {val} not found. Exiting.")
                             sys.exit(2)
-                
+
                 case "-j":
                     join_part = True
-                
+
                 case "-l":
                     if stdin:
                         print("Cannot use -l when reading from stdin.")
@@ -169,7 +205,7 @@ def main():
                     else:
                         file_clean = True
                         logfiles.append(val)
-                
+
                 case "-r":
                     replace_logs = True
 
@@ -178,10 +214,10 @@ def main():
 
                 case "-q":
                     quiet = True
-                
+
                 case "-y":
                     noauth_clean = True
-                
+
                 case "-h":
                     print(usage)
                     print("Flags:")
@@ -225,36 +261,17 @@ def main():
         elif purge_bots and join_part:
             print_out("Purging bots and join/part messages.", quiet)
         if not noauth_clean:
-            confirm = input(f"Are you sure you want to clean logs? (y/n): ")
-            if confirm.lower() != 'y':
+            confirm = input("Are you sure you want to clean logs? (y/n): ")
+            if confirm.lower() != "y":
                 print("Aborting.")
                 sys.exit(1)
         else:
             print_out("Proceeding without confirmation.", quiet)
 
-        timestamp = datetime.now().strftime('%Y-%m-%d [%H:%M:%S]')
-        print_out(f"{timestamp} Cleaning...", quiet)
-        start_time = monotonic()
-        sorted_logfiles = sorted(logfiles)
-        for logfile in sorted_logfiles:
-            try:
-                savings, lines_removed = parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet)
-                space_saved += savings
-                lines_purged += lines_removed
-            except FileNotFoundError:
-                print_out(f"{logfile}: file not found, skipping.", quiet)
-        end_time = monotonic()
-        elapsed = round(end_time - start_time, 3)
+        logclean_interactive(logfiles, join_part, purge_bots, bots, replace_logs, dry_run, quiet)
 
-    print_out(f"Cleaning duration: {elapsed} seconds.", quiet)
-    savings_rounded = round(space_saved, 2)
-    if replace_logs:
-        print_out(f"Lines purged: {lines_purged}\nTotal recovery: {savings_rounded}mb.", quiet)
-    elif dry_run:
-        print_out(f"{lines_purged} lines would be purged.\nCleaned files would be {savings_rounded}mb smaller.", quiet)
-    else:
-        print_out(f"Lines purged: {lines_purged}\nCleaned files are {savings_rounded}mb smaller.", quiet)
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
