@@ -16,18 +16,22 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+
 # TODO
 
+
 import os
+import pathlib
 import sys
 import getopt
+import pathlib
 from time import monotonic
 from datetime import datetime
-from pathlib import Path
+
 
 LOGGING = True
 if LOGGING:
-    LOGCLEAN_DIR = Path.home() / ".logclean"
+    LOGCLEAN_DIR = pathlib.Path.home() / ".logclean"
     LOGCLEAN_FILE = LOGCLEAN_DIR / "logclean.log"
     LOGCLEAN_DIR.mkdir(exist_ok=True)
 else:
@@ -36,9 +40,9 @@ else:
 
 
 def load_botfile(bfile):
-    botfile = os.path.abspath(bfile)
     botfile_bots = []
-    with open(botfile, "r", encoding="utf-8", errors="replace") as bot_file:
+    botfile = pathlib.Path(bfile)
+    with botfile.open("r", encoding="utf-8", errors="replace") as bot_file:
         for nick in bot_file:
             botfile_bots.append(nick.rstrip("\n"))
     return botfile_bots
@@ -79,12 +83,14 @@ def stdin_parse(stream, join_part, purge_bots, bots):
 
 
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
-    filename, _ = os.path.splitext(logfile)
-    tmpfile = f"{filename}.tmp"
-    original_filesize = os.path.getsize(logfile)
+    logfile = pathlib.Path(logfile)
+    logfile_name = logfile.stem
+    tmpfile_name = f"{logfile_name}.tmp"
+    tmpfile = pathlib.Path(tmpfile_name)
+    original_filesize = logfile.stat().st_size
     lines_removed = 0
-    with open(logfile, 'r', encoding='utf-8', errors='replace') as infile, \
-        open(tmpfile, 'w', encoding='utf-8', errors='replace') as outfile:
+    with logfile.open('r', encoding='utf-8', errors='replace') as infile, \
+        tmpfile.open('w', encoding='utf-8', errors='replace') as outfile:
         
         for line in infile:
             purge = should_purge(line, join_part, purge_bots, bots)
@@ -93,13 +99,13 @@ def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quie
             else:
                 outfile.write(line)
 
-    cleaned_filesize = os.path.getsize(tmpfile)
+    cleaned_filesize = tmpfile.stat().st_size
     space_savings = round((original_filesize - cleaned_filesize) / 1048576, 2)
-    print_out(f"{logfile} cleaned. {space_savings}mb saved.", quiet)
+    print_out(f"{logfile.resolve()} cleaned. {space_savings}mb saved.", quiet)
     if replace_logs:
-        os.replace(tmpfile, logfile)
+        tmpfile.replace(logfile)
     elif dry_run:
-        os.remove(tmpfile)
+        tmpfile.unlink()
     return space_savings, lines_removed
 
 
@@ -131,7 +137,7 @@ def logclean_interactive(logfiles, join_part, purge_bots, bots, replace_logs, dr
 
 def logclean_log(data):
     try:
-        with open(LOGCLEAN_FILE, "a", encoding="utf-8", errors="replace") as logging: # type: ignore
+        with LOGCLEAN_FILE.open("a", encoding="utf-8", errors="replace") as logging: # type: ignore
             logging.write(f"{data}\n")
     except Exception:
         print("Couldn't open logclean log file.")

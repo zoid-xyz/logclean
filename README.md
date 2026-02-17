@@ -91,7 +91,7 @@ Without -r, cleaned logs are written to .tmp files.
   
 The script is designed for ZNC logs but works with any compatible format.
   
-`logclean` only parses files and cleans files ending in *.log
+`logclean` only parses and cleans files ending in *.log
   
 This script removes only join/part/quit messages with the -j flag. Other
 channel events are preserved.
