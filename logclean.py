@@ -131,7 +131,7 @@ def logclean_interactive(logfiles, join_part, purge_bots, bots, replace_logs, dr
 
 def logclean_log(data):
     try:
-        with open(LOGCLEAN_FILE, "a", encoding="utf-8", errors="replace") as logging:
+        with open(LOGCLEAN_FILE, "a", encoding="utf-8", errors="replace") as logging: # type: ignore
             logging.write(f"{data}\n")
     except Exception:
         print("Couldn't open logclean log file.")
@@ -147,14 +147,14 @@ def print_out(data, quiet):
 def main():
     argc = len(sys.argv)
     argv = sys.argv[1:]
-    join_part = None
-    purge_bots = None
-    noauth_clean = None
-    replace_logs = None
-    dir_clean = None
-    file_clean = None
-    dry_run = None
-    quiet = None
+    join_part = False
+    purge_bots = False
+    noauth_clean = False
+    replace_logs = False
+    dir_clean = False
+    file_clean = False
+    dry_run = False
+    quiet = False
     stdin = not sys.stdin.isatty()
     logfiles = None if stdin else []
     bots = []
@@ -200,7 +200,7 @@ def main():
                         sys.exit(2)
                     else:
                         file_clean = True
-                        logfiles.append(val)
+                        logfiles.append(val) # type: ignore
 
                 case "-r":
                     replace_logs = True
