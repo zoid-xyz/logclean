@@ -20,8 +20,6 @@
 # TODO
 
 
-import os
-import pathlib
 import sys
 import getopt
 import pathlib
@@ -50,9 +48,9 @@ def load_botfile(bfile):
 
 def load_logfiles(logpath):
     logfiles = []
-    for file in os.listdir(logpath):
-        if file.endswith(".log"):
-            logfiles.append(os.path.join(logpath, file))
+    logs = pathlib.Path(logpath).glob("*.log")
+    for file in logs:
+        logfiles.append(file)
     return logfiles
 
 
@@ -85,8 +83,7 @@ def stdin_parse(stream, join_part, purge_bots, bots):
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     logfile = pathlib.Path(logfile)
     logfile_name = logfile.stem
-    tmpfile_name = f"{logfile_name}.tmp"
-    tmpfile = pathlib.Path(tmpfile_name)
+    tmpfile = logfile.with_name(f"{logfile.name}.tmp")
     original_filesize = logfile.stat().st_size
     lines_removed = 0
     with logfile.open('r', encoding='utf-8', errors='replace') as infile, \
