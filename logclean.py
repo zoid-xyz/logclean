@@ -83,7 +83,7 @@ def stdin_parse(stream, join_part, purge_bots, bots):
 def parse_logs(logfile, join_part, purge_bots, bots, replace_logs, dry_run, quiet):
     logfile = pathlib.Path(logfile)
     logfile_name = logfile.stem
-    tmpfile = logfile.with_name(f"{logfile.name}.tmp")
+    tmpfile = logfile.with_name(f"{logfile_name}.tmp")
     original_filesize = logfile.stat().st_size
     lines_removed = 0
     with logfile.open('r', encoding='utf-8', errors='replace') as infile, \
@@ -168,7 +168,7 @@ def main():
         print(usage)
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(argv, "b:d:l:hjqrty")
+        opts, _ = getopt.getopt(argv, "b:d:l:hjqrty")
 
         for opt, val in opts:
             match opt:
