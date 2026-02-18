@@ -103,9 +103,7 @@ The script was written with speed and memory in mind, no regex,
 only strip() and simple comparisons.
 
 ## Todo
-  
-Began using pathlib for logclean logging, implement pathlib everywhere applicable.
-   
+     
 Add to the logclean stats already implemented, removed/kept lines, etc.
   
 ## License
