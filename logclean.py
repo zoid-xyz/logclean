@@ -28,13 +28,10 @@ from datetime import datetime
 
 
 LOGGING = True
-if LOGGING:
-    LOGCLEAN_DIR = pathlib.Path.home() / ".logclean"
-    LOGCLEAN_FILE = LOGCLEAN_DIR / "logclean.log"
-    LOGCLEAN_DIR.mkdir(exist_ok=True)
-else:
-    LOGCLEAN_DIR = None
-    LOGCLEAN_FILE = None
+LOGCLEAN_DIR = pathlib.Path.home() / ".logclean"
+LOGCLEAN_FILE = LOGCLEAN_DIR / "logclean.log"
+LOGCLEAN_BOTFILE = LOGCLEAN_DIR / "botfile.txt"
+LOGCLEAN_DIR.mkdir(exist_ok=True)
 
 
 def load_botfile(bfile):
@@ -133,7 +130,7 @@ def logclean_interactive(logfiles, join_part, purge_bots, bots, replace_logs, dr
 
 def logclean_log(data):
     try:
-        with LOGCLEAN_FILE.open("a", encoding="utf-8", errors="replace") as logging: # type: ignore
+        with LOGCLEAN_FILE.open("a", encoding="utf-8", errors="replace") as logging:
             logging.write(f"{data}\n")
     except Exception:
         print("Couldn't open logclean log file.")
@@ -159,22 +156,29 @@ def main():
     quiet = False
     stdin = not sys.stdin.isatty()
     logfiles = None if stdin else []
-    bots = []
-    botfile = "botfile.txt"
-    usage = "Usage: logclean [options -d -b -j -h -y -l -r -q]"
+    bots = set()
+    usage = "Usage: logclean [options -d -b -B -l -h -j -q -r -t -y]"
 
     if argc <= 1:
         print(usage)
         sys.exit(1)
     try:
-        opts, _ = getopt.getopt(argv, "b:d:l:hjqrty")
+        opts, _ = getopt.getopt(argv, "b:d:l:Bhjqrty")
 
         for opt, val in opts:
             match opt:
                 case "-b":
                     purge_bots = True
-                    if val:
-                        botfile = val
+                    botfile = val
+                    try:
+                        bots = set(load_botfile(botfile))
+                    except FileNotFoundError:
+                        print(f"Botfile {botfile} not found. Exiting.")
+                        sys.exit(2)
+                
+                case "-B":
+                    purge_bots = True
+                    botfile = LOGCLEAN_BOTFILE
                     try:
                         bots = set(load_botfile(botfile))
                     except FileNotFoundError:
@@ -202,7 +206,7 @@ def main():
                         sys.exit(2)
                     else:
                         file_clean = True
-                        logfiles.append(val) # type: ignore
+                        logfiles.append(pathlib.Path(val)) # type: ignore
 
                 case "-r":
                     replace_logs = True
@@ -220,6 +224,7 @@ def main():
                     print(usage)
                     print("Flags:")
                     print("-b <botfile> : Purge bot messages based on botfile")
+                    print("-B           : Loads bots from ~/.logclean/botfile.txt")
                     print("-d <dir>     : Clean all logs in the provided directory")
                     print("-j           : Remove join/part messages")
                     print("-l <logfile> : Specify a single log file to clean")
