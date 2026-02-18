@@ -49,6 +49,7 @@ logclean [options]
 
 Flags:
 -b <botfile> : Purge bot messages based on botfile
+-B           : Loads bots from ~/.logclean/botfile.txt
 -d <dir>     : Clean all logs in the provided directory
 -j           : Remove join/part messages
 -l <logfile> : Specify a single log file to clean
@@ -85,7 +86,7 @@ WeatherScript
 ## Notes
 -d and -l cannot be used together.
   
--j and/or -b must be provided; otherwise nothing is cleaned.
+-j and/or -b/-B must be provided; otherwise nothing is cleaned.
   
 Without -r, cleaned logs are written to .tmp files.
   
