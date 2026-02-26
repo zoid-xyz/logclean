@@ -49,10 +49,7 @@ logclean [options]
 
 Flags:
 -b <botfile> : Purge bot messages based on botfile
--B           : Loads bots from ~/.logclean/botfile.txt
--d <dir>     : Clean all logs in the provided directory
 -j           : Remove join/part messages
--l <logfile> : Specify a single log file to clean
 -q           : Quiet; does not print output to terminal
 -r           : Removes original logs, replaces with cleaned logs
 -t           : Testing (dry run), displays would-be savings
@@ -63,15 +60,15 @@ Flags:
 ## Examples
 Remove join/part messages from a single log:
 ```bash
-logclean -l #channel.log -j
+logclean #channel.log -j
 ```
 Purge bots from a custom bot file:
 ```bash
-logclean -l #channel.log -b botfile.txt
+logclean #channel.log -b botfile.txt
 ```
 Clean an entire directory, purge bots, remove events, and overwrite originals:
 ```bash
-logclean -d /var/znc/users/myuser/moddata/log/ -b botfile.txt -j -r
+logclean /var/znc/users/myuser/moddata/log/ -b botfile.txt -j -r
 ```
 
 ## Botfile Format
@@ -84,8 +81,6 @@ WeatherScript
 ```
 
 ## Notes
--d and -l cannot be used together.
-  
 -j and/or -b/-B must be provided; otherwise nothing is cleaned.
   
 Without -r, cleaned logs are written to .tmp files.
@@ -107,7 +102,7 @@ only strip() and simple comparisons.
   
 Add to the logclean stats already implemented, removed/kept lines, etc.
   
-Complete refactor using a Class and Argparse instead of getopt. (Work in Progress)
+Complete refactor using a Class. (Work in Progress)
   
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
