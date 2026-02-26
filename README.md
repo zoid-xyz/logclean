@@ -107,5 +107,7 @@ only strip() and simple comparisons.
      
 Add to the logclean stats already implemented, removed/kept lines, etc.
   
+Complete refactor using a Class and Argparse instead of getopt. (Work in Progress)
+  
 ## License
 This project is licensed under the [2-Clause BSD license](LICENSE).
