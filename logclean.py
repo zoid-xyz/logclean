@@ -20,7 +20,6 @@
 # TODO
 
 
-from math import log
 import sys
 import argparse
 import pathlib
@@ -150,12 +149,12 @@ def parse_args(argv=None):
     p.add_argument("-b", "--botfile", nargs="?", help="File containing bot nicks, one per line")
     p.add_argument("-j", "--join-part", action="store_true",
                    help="Remove JOIN/PART/QUIT lines")
-    p.add_argument("-n", "--dry-run", action="store_true",
-                   help="Don't modify files, just report")
     p.add_argument("-q", "--quiet", action="store_true",
                    help="Suppress per-file summary output")
     p.add_argument("-r", "--replace", action="store_true",
                    help="Replace original file with cleaned version")
+    p.add_argument("-t", "--dry-run", action="store_true",
+                   help="Don't modify files, just report")
     p.add_argument("-y", "--no-auth", action="store_true",
                    help="Proceed without confirmation")
     return p.parse_args(argv)
@@ -190,16 +189,10 @@ def main(argv=None):
         file_clean = pathlib.Path(args.path).is_file()
         if file_clean:
             logfiles.append(pathlib.Path(args.path)) # type: ignore
-    if not logfiles and not stdin:
-        print("No log files found to clean. Exiting.")
-        sys.exit(2)
-    elif dir_clean and file_clean:
-        print("Conflicting flags: -l and -d; Exiting.")
-        sys.exit(1)
-    elif replace_logs and dry_run:
+    if replace_logs and dry_run:
         print("Conflicting flags: -r and -t; Exiting.")
         sys.exit(1)
-    elif stdin:
+    if stdin:
         for line in sys.stdin:
             stdin_parse(line.rstrip("\n"), join_part, purge_bots, bots)
         sys.exit(0)
