@@ -184,14 +184,14 @@ def main(argv=None):
         purge_bots = True
         bots = set(load_botfile(LOGCLEAN_BOTFILE))
     if not stdin:
-        logfiles = load_logfiles(args.path)
-        dir_clean = pathlib.Path(args.path).is_dir()
-        file_clean = pathlib.Path(args.path).is_file()
-        if file_clean:
+        if pathlib.Path(args.path).is_dir():
+            logfiles = load_logfiles(args.path)
+        if pathlib.Path(args.path).is_file():
             logfiles.append(pathlib.Path(args.path)) # type: ignore
     if replace_logs and dry_run:
         print("Conflicting flags: -r and -t; Exiting.")
         sys.exit(1)
+
     if stdin:
         for line in sys.stdin:
             stdin_parse(line.rstrip("\n"), join_part, purge_bots, bots)
