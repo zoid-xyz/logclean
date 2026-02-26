@@ -20,8 +20,9 @@
 # TODO
 
 
+from math import log
 import sys
-import getopt
+import argparse
 import pathlib
 from time import monotonic
 from datetime import datetime
@@ -143,103 +144,49 @@ def print_out(data, quiet):
         print(data)
 
 
-def main():
-    argc = len(sys.argv)
-    argv = sys.argv[1:]
-    join_part = False
+def parse_args(argv=None):
+    p = argparse.ArgumentParser(description="Clean IRC/ZNC logs.")
+    p.add_argument("path", nargs="?", help="Log file or directory to clean")
+    p.add_argument("-b", "--botfile", help="File containing bot nicks, one per line")
+    p.add_argument("-j", "--join-part", action="store_true",
+                   help="Remove JOIN/PART/QUIT lines")
+    p.add_argument("-n", "--dry-run", action="store_true",
+                   help="Don't modify files, just report")
+    p.add_argument("-q", "--quiet", action="store_true",
+                   help="Suppress per-file summary output")
+    p.add_argument("-r", "--replace", action="store_true",
+                   help="Replace original file with cleaned version (backup .bak)")
+    p.add_argument("-y", "--no-auth", action="store_true",
+                   help="Proceed without confirmation")
+    return p.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    join_part = args.join_part
+    noauth_clean = args.no_auth
+    replace_logs = args.replace
     purge_bots = False
-    noauth_clean = False
-    replace_logs = False
     dir_clean = False
     file_clean = False
-    dry_run = False
-    quiet = False
+    dry_run = args.dry_run
+    quiet = args.quiet
     stdin = not sys.stdin.isatty()
     logfiles = None if stdin else []
     bots = set()
-    usage = "Usage: logclean [options -d -b -B -l -h -j -q -r -t -y]"
 
-    if argc <= 1:
-        print(usage)
+    if not stdin and args.path is None:
+        print("No input provided. Specify a log file/directory or provide input via stdin.")
         sys.exit(1)
-    try:
-        opts, _ = getopt.getopt(argv, "b:d:l:Bhjqrty")
-
-        for opt, val in opts:
-            match opt:
-                case "-b":
-                    purge_bots = True
-                    botfile = val
-                    try:
-                        bots = set(load_botfile(botfile))
-                    except FileNotFoundError:
-                        print(f"Botfile {botfile} not found. Exiting.")
-                        sys.exit(2)
-                
-                case "-B":
-                    purge_bots = True
-                    botfile = LOGCLEAN_BOTFILE
-                    try:
-                        bots = set(load_botfile(botfile))
-                    except FileNotFoundError:
-                        print(f"Botfile {botfile} not found. Exiting.")
-                        sys.exit(2)
-
-                case "-d":
-                    if stdin:
-                        print("Cannot use -d when reading from stdin.")
-                        sys.exit(2)
-                    else:
-                        dir_clean = True
-                        try:
-                            logfiles = load_logfiles(val)
-                        except FileNotFoundError:
-                            print(f"Directory {val} not found. Exiting.")
-                            sys.exit(2)
-
-                case "-j":
-                    join_part = True
-
-                case "-l":
-                    if stdin:
-                        print("Cannot use -l when reading from stdin.")
-                        sys.exit(2)
-                    else:
-                        file_clean = True
-                        logfiles.append(pathlib.Path(val)) # type: ignore
-
-                case "-r":
-                    replace_logs = True
-
-                case "-t":
-                    dry_run = True
-
-                case "-q":
-                    quiet = True
-
-                case "-y":
-                    noauth_clean = True
-
-                case "-h":
-                    print(usage)
-                    print("Flags:")
-                    print("-b <botfile> : Purge bot messages based on botfile")
-                    print("-B           : Loads bots from ~/.logclean/botfile.txt")
-                    print("-d <dir>     : Clean all logs in the provided directory")
-                    print("-j           : Remove join/part messages")
-                    print("-l <logfile> : Specify a single log file to clean")
-                    print("-q           : Quiet; does not print output to terminal")
-                    print("-r           : Removes original logs replaces with cleaned logs")
-                    print("-t           : Testing (dry run), displays would-be savings")
-                    print("-y           : Proceed without confirmation (use with caution)")
-                    print("-h           : Display this help message")
-                    sys.exit(0)
-
-    except getopt.GetoptError as err:
-        print(err)
-        print(usage)
-        sys.exit(2)
-
+    if args.botfile:
+        purge_bots = True
+        bots = set(load_botfile(args.botfile))
+    if not stdin:
+        logfiles = load_logfiles(args.path)
+        dir_clean = pathlib.Path(args.path).is_dir()
+        file_clean = pathlib.Path(args.path).is_file()
+        if file_clean:
+            logfiles.append(pathlib.Path(args.path)) # type: ignore
     if not logfiles and not stdin:
         print("No log files found to clean. Exiting.")
         sys.exit(2)
