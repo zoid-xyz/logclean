@@ -81,7 +81,7 @@ WeatherScript
 ```
 
 ## Notes
--j and/or -b/-B must be provided; otherwise nothing is cleaned.
+-j and/or -b must be provided; otherwise nothing is cleaned.
   
 Without -r, cleaned logs are written to .tmp files.
   
