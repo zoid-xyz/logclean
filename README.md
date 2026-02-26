@@ -104,7 +104,7 @@ The script was written with speed and memory in mind, no regex,
 only strip() and simple comparisons.
 
 ## Todo
-     
+  
 Add to the logclean stats already implemented, removed/kept lines, etc.
   
 Complete refactor using a Class and Argparse instead of getopt. (Work in Progress)
