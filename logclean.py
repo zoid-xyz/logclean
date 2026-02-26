@@ -147,7 +147,7 @@ def print_out(data, quiet):
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description="Clean IRC/ZNC logs.")
     p.add_argument("path", nargs="?", help="Log file or directory to clean")
-    p.add_argument("-b", "--botfile", help="File containing bot nicks, one per line")
+    p.add_argument("-b", "--botfile", nargs="?", help="File containing bot nicks, one per line")
     p.add_argument("-j", "--join-part", action="store_true",
                    help="Remove JOIN/PART/QUIT lines")
     p.add_argument("-n", "--dry-run", action="store_true",
@@ -155,7 +155,7 @@ def parse_args(argv=None):
     p.add_argument("-q", "--quiet", action="store_true",
                    help="Suppress per-file summary output")
     p.add_argument("-r", "--replace", action="store_true",
-                   help="Replace original file with cleaned version (backup .bak)")
+                   help="Replace original file with cleaned version")
     p.add_argument("-y", "--no-auth", action="store_true",
                    help="Proceed without confirmation")
     return p.parse_args(argv)
@@ -181,6 +181,9 @@ def main(argv=None):
     if args.botfile:
         purge_bots = True
         bots = set(load_botfile(args.botfile))
+    if args.botfile is None and '-b' or '--botfile' in sys.argv:
+        purge_bots = True
+        bots = set(load_botfile(LOGCLEAN_BOTFILE))
     if not stdin:
         logfiles = load_logfiles(args.path)
         dir_clean = pathlib.Path(args.path).is_dir()
