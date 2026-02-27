@@ -17,9 +17,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# TODO
-
-
 import sys
 import argparse
 import pathlib
