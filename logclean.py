@@ -56,15 +56,14 @@ class LogCleaner:
     def load_botfile(self, bfile):
         botfile_bots = []
         botfile = pathlib.Path(bfile)
-        with botfile.open("r", encoding="utf-8", errors="replace") as bot_file:
-            for nick in bot_file:
-                botfile_bots.append(nick.rstrip("\n"))
+        if botfile.exists():
+            with botfile.open("r", encoding="utf-8", errors="replace") as bot_file:
+                for nick in bot_file:
+                    botfile_bots.append(nick.rstrip("\n"))
+        else:
+            print(f"Botfile {bfile} not found. Exiting.")
+            sys.exit(1)
         self.bots = set(botfile_bots)
-
-
-        #path = Path("docs")
-        #for p in path.rglob("*"):
-        #    print(p.name)
 
 
     def load_logfiles(self):
@@ -154,8 +153,7 @@ class LogCleaner:
         timestamp = datetime.now().strftime("%Y-%m-%d [%H:%M:%S]")
         self.print_out(f"{timestamp} Cleaning...")
         start_time = monotonic()
-        sorted_logfiles = sorted(self.logfiles) # type: ignore
-        for logfile in sorted_logfiles:
+        for logfile in self.logfiles: # type: ignore
             try:
                 savings, lines_removed = self.parse_logs(logfile)
                 space_saved += savings
