@@ -60,14 +60,26 @@ class LogCleaner:
             for nick in bot_file:
                 botfile_bots.append(nick.rstrip("\n"))
         self.bots = set(botfile_bots)
-  
+
+
+        #path = Path("docs")
+        #for p in path.rglob("*"):
+        #    print(p.name)
+
 
     def load_logfiles(self):
+        base = pathlib.Path(self.path)
         logfiles = []
-        logs = pathlib.Path(self.path).glob("*.log")
-        for file in logs:
-            logfiles.append(file)
-        self.logfiles = logfiles
+
+        if not base.exists() or not base.is_dir():
+            self.logfiles = []
+            return
+
+        for path in base.rglob("*.log"):
+            if path.is_file():
+                logfiles.append(path)
+
+        self.logfiles = sorted(logfiles)
 
 
     def should_purge(self, line):
